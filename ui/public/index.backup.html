@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>映髮｜一鏡換髮（HairLight Studio）</title>
+<link rel="icon" href="/storage/brand/hairlight-icon.svg" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="/storage/brand/hairlight-icon.svg">
+<link rel="manifest" href="/storage/brand/manifest.webmanifest">
+
+<!-- 社群分享 Open Graph -->
+<meta property="og:title" content="映髮｜一鏡換髮（HairLight Studio）">
+<meta property="og:description" content="未剪先見，一鏡換髮：上傳顧客照＋參考髮型，即刻預覽自然髮際與光影融合的最終效果。">
+<meta property="og:image" content="/storage/brand/hairlight-wordmark.svg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#5B5AE7">
+<style>
+  :root{
+    /* Brand palette */
+    --ring:#5B5AE7;           /* 主色：冷紫靛 */
+    --ring-weak:#A8B2FF;      /* 主色弱化/hover */
+    --glow-mint:#49E6D6;      /* 補光薄荷青 */
+    --hair-brown:#8A6B52;     /* 髮棕（中性色） */
+
+    /* UI tokens */
+    --bg:#f7f7f8; --card:#ffffff; --muted:#6b7280; --line:#e5e7eb;
+    --text:#111827; --text-weak:#374151;
+    --radius:14px; --shadow:0 8px 28px rgba(17,24,39,.08); --container:1120px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text)}
+  a,button{transition:.2s ease}
+  .container{max-width:var(--container);margin:0 auto;padding:18px 16px 88px}
+
+  /* AppBar */
+  .appbar{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,#ffffffee,#ffffffd0 75%,#ffffff00);backdrop-filter:saturate(120%) blur(6px);border-bottom:1px solid var(--line)}
+  .appbar .inner{max-width:var(--container);margin:0 auto;padding:12px 16px;display:flex;gap:12px;align-items:center}
+  .logo{width:28px;height:28px;border-radius:8px;background:conic-gradient(from 210deg, var(--ring), #22d3ee 18%, #c084fc 44%, var(--ring) 82%);box-shadow:0 4px 16px rgba(79,70,229,.25)}
+  .title{font-weight:800;letter-spacing:.3px}
+
+  /* Uploader */
+  fieldset{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);padding:14px;margin:14px 0;box-shadow:var(--shadow)}
+  legend{padding:0 8px;color:var(--text-weak)}
+  .uploader-grid{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+  .uploader{width:150px;aspect-ratio:1/1;border:2px dashed var(--line);border-radius:12px;background:#fff;position:relative;display:flex;align-items:center;justify-content:center;color:#6b7280;box-shadow:0 2px 10px rgba(17,24,39,.05);overflow:hidden}
+  /* input 永遠置頂可點：單次點擊即彈出選檔 */
+  .uploader input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:10;pointer-events:auto}
+  .uploader img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;z-index:0}
+  .uploader .hint{position:absolute;bottom:8px;left:8px;background:#111c;color:#fff;border:1px solid #ffffff20;padding:4px 8px;border-radius:999px;font-size:12px;z-index:1}
+  .uploader:focus-within{outline:3px solid var(--ring-weak)}
+  .uploader .redo{position:absolute;top:8px;right:8px;background:#ffffffe6;border:1px solid var(--line);border-radius:999px;font-size:12px;padding:4px 8px;cursor:pointer;display:none;z-index:20}
+  .uploader.has-img .redo{display:inline-block}
+  .actions-inline{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;cursor:pointer;box-shadow:0 1px 6px rgba(17,24,39,.06)}
+  .btn.primary{background:var(--ring);border-color:var(--ring);color:#fff;box-shadow:0 6px 18px rgba(91,90,231,.25)}
+  .btn:active{transform:translateY(1px)}
+  .help{color:#6b7280;font-size:13px}
+
+  /* Candidates */
+  .section-title{font-size:18px;margin:18px 4px 8px;color:var(--text)} .subtle{color:#6b7280;font-size:13px;margin:6px 4px 0}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .12s ease, box-shadow .12s ease}
+  .card:hover{transform:translateY(-1px); box-shadow:0 10px 28px rgba(17,24,39,.12)}
+  .card img{width:100%;border-radius:8px;display:block}
+  .ribbon{position:absolute;top:10px;left:-40px;transform:rotate(-12deg);background:var(--ring);color:#fff;padding:6px 50px;font-size:12px;box-shadow:0 6px 16px rgba(91,90,231,.25)}
+  .tag{position:absolute;top:10px;left:10px;background:#111;color:#fff;padding:4px 8px;border-radius:999px;font-size:12px}
+  .chip{position:absolute;top:10px;right:10px;background:#111;color:#fff;border-radius:999px;padding:4px 8px;font-size:12px;opacity:.92}
+  .scores{display:flex;gap:6px;margin-top:6px}
+  .scores .mini{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:2px 6px;font-size:12px;color:#374151}
+  .card.pick{outline:3px solid var(--ring);outline-offset:2px}
+
+  /* Compare */
+  .compare{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
+  .toolrow{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+  .link{color:var(--ring);text-decoration:none;border-bottom:1px dashed var(--ring-weak);padding-bottom:1px}
+  .compare img{max-width:100%;border-radius:10px;display:block;border:1px solid var(--line);box-shadow:0 6px 18px rgba(17,24,39,.06)}
+
+  /* FAB */
+  .fab{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fffffff2;backdrop-filter:saturate(120%) blur(8px);border-top:1px solid var(--line);padding:10px 12px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:center}
+  .fab .btn{min-width:240px}
+
+  /* Busy & Toast */
+  #busy{position:fixed;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;z-index:70}
+  #busy .box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;box-shadow:var(--shadow);display:flex;gap:12px;align-items:center}
+  .spinner{width:20px;height:20px;border:3px solid var(--line);border-top-color:var(--ring);border-radius:50%;animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;inset:auto 0 22px 0;display:flex;justify-content:center;pointer-events:none;z-index:100}
+  .toast .msg{pointer-events:auto;max-width:90vw;background:#111;color:#fff;padding:10px 14px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+
+  /* Viewer */
+  .viewer{position:fixed;inset:0;background:#000a;display:none;flex-direction:column;z-index:80}
+  .vbar{display:flex;gap:8px;align-items:center;background:#fff;padding:8px 12px;border-bottom:1px solid var(--line)} .vbar .grow{flex:1}
+  .vstage{position:relative;flex:1;touch-action:none;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#000}
+  #vImg{max-width:none;transform-origin:center center;user-select:none;-webkit-user-drag:none}
+
+  /* Menu (single instance) */
+  .menu{position:fixed;display:none;z-index:90;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:160px;overflow:hidden;animation:menuIn .12s ease}
+  .menu button{display:block;width:100%;padding:10px 12px;border:0;background:#fff;text-align:left;font-size:14px}
+  .menu button:hover{background:#f3f4f6}
+  @keyframes menuIn{from{transform:translateY(4px);opacity:.0}to{transform:none;opacity:1}}
+
+  @media (max-width:860px){ .grid{grid-template-columns:1fr 1fr} .fab .btn{min-width:unset;width:100%} }
+/* ===== Brand Typography (HairLight) ===== */
+.brand-wrap{display:flex;gap:12px;align-items:center}
+.brand-icon{border-radius:8px;flex:0 0 auto}
+.brand-text{display:flex;flex-direction:column;line-height:1.05}
+.brand-title{font-weight:800;font-size:22px;letter-spacing:.3px;color:var(--text)}
+.brand-sub{font-weight:600;font-size:13px;color:var(--ring);margin-top:2px}
+/* 保證不會被連結藍色污染（若外層曾用 <a>）： */
+.appbar .inner a, .appbar .inner a:link, .appbar .inner a:visited{color:inherit;text-decoration:none}
+/* 抗鋸齒與易讀性 */
+html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+</style>
+
+<body>
+  <div class="appbar"><div class="inner">
+  <div class="brand-wrap">
+    <img src="/storage/brand/hairlight-icon.svg" alt="映髮 HairLight" width="28" height="28" class="brand-icon"/>
+    <div class="brand-text">
+      <div class="brand-title">映髮｜一鏡換髮</div>
+      <div class="brand-sub">HairLight Studio</div>
+    </div>
+  </div>
+  <div style="flex:1"></div>
+</div></div></div></div>
+
+  <div id="busy"><div class="box"><div class="spinner"></div><div id="busyText">處理中…</div></div></div>
+  <div class="toast" id="toast" style="display:none"><div class="msg" id="toastMsg"></div></div>
+
+  <div class="container">
+    <fieldset>
+      <legend>一鍵新任務（拍照 / 選圖）</legend>
+      <div class="uploader-grid">
+        <label class="uploader" title="點擊選圖或拍照">
+          <input id="userFile" type="file" accept="image/*" capture="environment">
+          <img id="userThumb" alt=""><button type="button" class="redo">重選</button><span class="hint">顧客照</span><span aria-hidden="true">＋</span>
+        </label>
+        <label class="uploader" title="點擊選圖">
+          <input id="styleFile" type="file" accept="image/*">
+          <img id="styleThumb" alt=""><button type="button" class="redo">重選</button><span class="hint">參考髮型</span><span aria-hidden="true">＋</span>
+        </label>
+        <div class="actions-inline">
+          <button class="btn primary" id="newRun">建立並自動生成</button>
+          <span class="help">提示：手機請允許本頁使用相機；iOS 若無後鏡頭可試移除「environment」。</span>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="section-title" id="title">候選結果（長按或右鍵 → 放大／下載／分享）</div>
+    <div class="grid" id="grid"></div>
+    <div class="subtle" id="hint"></div>
+
+    <div id="compareWrap" class="compare" style="display:none">
+      <div class="toolrow"><a id="compareLink" class="link" target="_blank">在新分頁開啟</a><button id="copyLink" class="btn">複製連結</button></div>
+      <img id="compareImg" alt="compare preview"/>
+    </div>
+  </div>
+
+  <div class="fab"><button id="use" class="btn primary">使用這張產出對比圖</button></div>
+
+  <div id="viewer" class="viewer">
+    <div class="vbar"><button id="vClose" class="btn">關閉</button><a id="vOpen" class="btn" target="_blank">新分頁</a><button id="vDownload" class="btn">下載</button><div class="grow"></div><button id="vMinus" class="btn">－</button><button id="vPlus" class="btn">＋</button><button id="vReset" class="btn">重置</button></div>
+    <div class="vstage"><img id="vImg" alt="preview"></div>
+  </div>
+
+  <div id="menu" class="menu"><button data-act="zoom">放大</button><button data-act="download">下載</button><button data-act="share">分享</button></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const toast = t => { $("#toastMsg").textContent=t; $("#toast").style.display="flex"; setTimeout(()=>$("#toast").style.display="none", 2200); };
+const busy  = (on,msg="處理中…") => { $("#busyText").textContent=msg; $("#busy").style.display=on?"flex":"none"; };
+async function fetchJSON(u,o){ const r=await fetch(u,o); let d; try{ d=await r.json(); }catch{ d={error:await r.text()}; } if(!r.ok) throw new Error(d?.error||('HTTP '+r.status)); return d; }
+async function fetchJob(id){ return fetchJSON(`/api/job/${id}`); }
+async function fetchLastJob(){ return fetchJSON("/api/last-job"); }
+
+/* 可靠縮圖：objectURL → FileReader fallback */
+function setThumb(file, img, box){
+  if(!file) return;
+  try{ const obj=URL.createObjectURL(file); img.onload=()=>URL.revokeObjectURL(obj); img.src=obj; }
+  catch{ const rd=new FileReader(); rd.onload=e=>img.src=e.target.result; rd.readAsDataURL(file); }
+  box.classList.add("has-img");
+}
+
+/* ===== Viewer（拖曳 + 雙指/雙擊） ===== */
+let vScale=1,vX=0,vY=0,vSrc="";
+const applyT=()=> $("#vImg").style.transform=`translate(${vX}px,${vY}px) scale(${vScale})`;
+const openViewer=(src)=>{ vSrc=src; $("#viewer").style.display="flex"; $("#vImg").src=src; $("#vOpen").href=src; vScale=1; vX=0; vY=0; applyT(); };
+$("#vClose").onclick=()=> $("#viewer").style.display="none";
+$("#vPlus").onclick =()=>{ vScale=Math.min(6,vScale*1.2); applyT(); };
+$("#vMinus").onclick=()=>{ vScale=Math.max(0.5,vScale/1.2); applyT(); };
+$("#vReset").onclick=()=>{ vScale=1; vX=0; vY=0; applyT(); };
+async function downloadSmart(url, filename){ try{ const r=await fetch(url,{cache:"no-store"}); const b=await r.blob(); const o=URL.createObjectURL(b); const a=document.createElement("a"); a.href=o; a.download=filename||url.split("/").pop(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(o),2000);}catch{ window.open(url,"_blank"); } }
+(function(){ let pts=new Map(), lastDist=0,lastCx=0,lastCy=0; const st=$(".vstage");
+  const set=e=>pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); const del=e=>{pts.delete(e.pointerId);lastDist=0;};
+  st.addEventListener("pointerdown",e=>{st.setPointerCapture(e.pointerId);set(e)}); st.addEventListener("pointerup",del); st.addEventListener("pointercancel",del);
+  st.addEventListener("pointermove",e=>{
+    if(!pts.has(e.pointerId)) return; set(e);
+    if(pts.size===2){ const [p1,p2]=[...pts.values()], dx=p2.x-p1.x, dy=p2.y-p1.y; const dist=Math.hypot(dx,dy);
+      const cx=(p1.x+p2.x)/2, cy=(p1.y+p2.y)/2;
+      if(lastDist){ const ratio=dist/lastDist, nx=Math.min(6,Math.max(0.5,vScale*ratio));
+        vX = cx - (cx - vX)*(nx/vScale); vY = cy - (cy - vY)*(nx/vScale); vScale=nx; applyT();
+        vX += (cx-lastCx); vY += (cy-lastCy); applyT(); }
+      lastDist=dist; lastCx=cx; lastCy=cy;
+    } else if(pts.size===1){ vX+=e.movementX; vY+=e.movementY; applyT(); }
+  });
+  let lastTap=0; st.addEventListener("pointerup",e=>{ const now=Date.now();
+    if(now-lastTap<280){ const r=st.getBoundingClientRect(), cx=e.clientX-r.left, cy=e.clientY-r.top; const target=vScale<1.8?2:1;
+      vX = cx - (cx - vX)*(target/vScale); vY = cy - (cy - vY)*(target/vScale); vScale=target; applyT(); lastTap=0; } else lastTap=now; });
+})();
+
+/* ===== 單例長按/右鍵選單 ===== */
+(function(){
+  const menu = document.getElementById("menu");
+  let menuSrc = "";
+  function showMenu(x,y,src){ const vw=innerWidth,vh=innerHeight,mw=170,mh=120; menuSrc=src; menu.style.left=Math.min(vw-mw-8,Math.max(8,x))+"px"; menu.style.top=Math.min(vh-mh-8,Math.max(8,y))+"px"; menu.style.display="block"; }
+  const hideMenu=()=> menu.style.display="none";
+  menu.addEventListener("click", async e=>{
+    const act=e.target.dataset.act;
+    if(act==="zoom") openViewer(menuSrc);
+    if(act==="download") await downloadSmart(menuSrc);
+    if(act==="share" && navigator.share){ try{ await navigator.share({ title:"映髮｜一鏡換髮（HairLight Studio）", url:menuSrc }); }catch{} }
+    hideMenu();
+  });
+  document.addEventListener("click",e=>{ if(!menu.contains(e.target)) hideMenu(); });
+  document.addEventListener("scroll", hideMenu, true);
+  document.addEventListener("contextmenu", e=>{ if(e.target.matches("img.ctx")) e.preventDefault(); });
+  window.attachCtx = function(img){
+    img.classList.add("ctx");
+    img.addEventListener("contextmenu",e=>{e.preventDefault();showMenu(e.clientX,e.clientY,img.src);});
+    let t=null; img.addEventListener("touchstart",ev=>{ if(t)clearTimeout(t); const p=ev.touches[0]; t=setTimeout(()=>showMenu(p.clientX,p.clientY,img.src),450); },{passive:true});
+    ["touchend","touchmove","touchcancel"].forEach(ev=> img.addEventListener(ev,()=>t&&clearTimeout(t),{passive:true}));
+  };
+})();
+
+/* ===== App state / render / loadJob ===== */
+let state={ job:null, pick:null, meta:null, userPath:null, stylePath:null };
+
+function render(job){
+  state.meta=job.meta||{}; const auto=(state.meta.autopick_index||1)-1; const list=job.results||[];
+  const grid=document.getElementById("grid"); grid.innerHTML="";
+  document.getElementById("title").textContent=(job.meta?.style_desc||"候選結果（點圖可改選）")+(job.meta?.review_needed?" ｜建議人工檢視":"");
+  list.forEach((r,i)=>{
+    const card=document.createElement("div"); card.className="card"+(i===auto?" pick":"");
+    const img=document.createElement("img"); img.src=r.url; img.alt=`cand_${i+1}`; img.loading="lazy"; attachCtx(img);
+    if(i===auto){ const rib=document.createElement("div"); rib.className="ribbon"; rib.textContent="自動挑"; card.appendChild(rib); }
+    else{ const t=document.createElement("div"); t.className="tag"; t.textContent="候選"; card.appendChild(t); }
+    if(r.scores && typeof r.scores.total==="number"){
+      const chip=document.createElement("div"); chip.className="chip"; chip.textContent=`總分 ${r.scores.total}`; card.appendChild(chip);
+      const row=document.createElement("div"); row.className="scores"; row.innerHTML=`<span class="mini">臉 ${r.scores.identity ?? "-"}</span><span class="mini">色 ${r.scores.color ?? "-"}</span>`; card.appendChild(row);
+    }
+    card.appendChild(img);
+    card.onclick=()=>{ [...document.querySelectorAll(".card")].forEach(el=>el.classList.remove("pick")); card.classList.add("pick"); state.pick=i+1; };
+    grid.appendChild(card);
+  });
+  state.pick=auto+1;
+  document.getElementById("hint").textContent=list.length?`已載入 ${list.length} 張，預設使用第 ${state.pick} 張`:"此任務目前沒有候選圖";
+  if(job.meta?.user_src){ state.userPath=job.meta.user_src; const im=document.getElementById("userThumb"); im.src="/"+job.meta.user_src; im.closest(".uploader").classList.add("has-img"); }
+  if(job.meta?.style_src){ state.stylePath=job.meta.style_src; const im=document.getElementById("styleThumb"); im.src="/"+job.meta.style_src; im.closest(".uploader").classList.add("has-img"); }
+}
+
+async function loadJob(id){ busy(true,"讀取任務中…"); try{ const job=await fetchJob(id); state.job=id; render(job); } finally{ busy(false); } }
+
+/* 初始化：自動載入最新任務 */
+(async()=>{ try{ const info=await fetchLastJob(); if(info.job_id) await loadJob(info.job_id); }catch{} })();
+
+/* 上傳預覽＋重選 */
+document.getElementById("userFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; setThumb(f,document.getElementById("userThumb"),document.getElementById("userThumb").closest(".uploader")); });
+document.getElementById("styleFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; setThumb(f,document.getElementById("styleThumb"),document.getElementById("styleThumb").closest(".uploader")); });
+document.querySelectorAll(".uploader .redo").forEach(btn=>{
+  btn.addEventListener("click",(ev)=>{ ev.stopPropagation(); const box=btn.closest(".uploader"); const input=box.querySelector("input"); const img=box.querySelector("img");
+    input.value=""; img.removeAttribute("src"); box.classList.remove("has-img"); input.click(); });
+});
+
+/* 產出對比圖（使用最新路徑） */
+document.getElementById("use").onclick = async ()=>{
+  if(!state.job) return toast("請先建立或載入任務");
+  const userFS=(state.userPath||"").replace(/^\//,""), styleFS=(state.stylePath||"").replace(/^\//,"");
+  if(!userFS||!styleFS) return toast("請先選取『顧客照／參考髮型』");
+  busy(true,"產生對比圖中…");
+  try{
+    const data=await fetchJSON("/api/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({job_id:state.job,user:userFS,style:styleFS,pick:state.pick,title:(state.meta?.style_desc||"髮型預覽對比")})});
+    const rel=data.out.startsWith("/")?data.out:"/"+data.out, full=new URL(rel,location.origin).href;
+    document.getElementById("compareWrap").style.display=""; document.getElementById("compareLink").href=full;
+    const cimg=document.getElementById("compareImg"); cimg.loading="lazy"; cimg.src=rel+"?t="+Date.now(); attachCtx(cimg);
+    toast("映髮已產出對比圖");
+  }catch(e){ toast("產圖失敗："+e.message); }
+  finally{ busy(false); }
+};
+
+/* —— 保證 newRun 綁定（僅綁一次） —— */
+(function wireNewRunOnce(){
+  const btn = document.getElementById('newRun'), userInput=document.getElementById('userFile'), styleInput=document.getElementById('styleFile');
+  if (!btn || btn.dataset.bound==='1') return; btn.dataset.bound='1'; console.log('[ui] new-run bound');
+  const ready = ()=> userInput?.files?.length>0 && styleInput?.files?.length>0;
+
+  btn.addEventListener('click', async ()=>{
+    if(!ready()){ toast('請先選取「顧客照 / 參考髮型」'); return; }
+    busy(true,'上傳與生成中（約 10–40 秒）…');
+    try{
+      const fd=new FormData(); fd.append('user',userInput.files[0]); fd.append('style',styleInput.files[0]);
+      const r = await fetch('/api/new-run',{method:'POST',body:fd}); const text=await r.text();
+      if(!r.ok) throw new Error(text||('HTTP '+r.status));
+      const data=JSON.parse(text);
+      if(data.user){ const p=data.user.replace(/^\//,''); state.userPath=p; const im=document.getElementById('userThumb'); im.src=data.user; im.closest('.uploader').classList.add('has-img'); }
+      if(data.style){ const p=data.style.replace(/^\//,''); state.stylePath=p; const im=document.getElementById('styleThumb'); im.src=data.style; im.closest('.uploader').classList.add('has-img'); }
+      if(data.job_id){ await loadJob(data.job_id); }
+      if(data.compare_url){ const rel=data.compare_url.startsWith('/')?data.compare_url:'/'+data.compare_url; const full=new URL(rel,location.origin).href;
+        document.getElementById('compareWrap').style.display=''; document.getElementById('compareLink').href=full; const im=document.getElementById('compareImg'); im.loading='lazy'; im.src=rel+'?t='+Date.now(); attachCtx(im); }
+      toast('生成完成');
+    }catch(e){ console.error('[ui] new-run error:',e); toast('執行失敗：'+(e?.message||e)); }
+    finally{ busy(false); }
+  });
+})();
+</script>
+</body>
+</html>
+
+
+
+
