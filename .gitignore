@@ -1,9 +1,14 @@
 node_modules/
 *.log
+# 本機 storage：只保留品牌檔
 storage/uploads/
 storage/results/
 storage/jobs/
 !storage/brand/
+
+# 環境變數與暫存
 .env
 .vercel/
 .firebase/
+*.tmp
+*.bak
