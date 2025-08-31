@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "UploadsSignRequest",
+  "type": "object",
+  "required": ["files"],
+  "properties": {
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["purpose", "content_type"],
+        "properties": {
+          "purpose": { "type": "string", "enum": ["user_photo", "style_photo"] },
+          "content_type": { "type": "string", "enum": ["image/jpeg", "image/png"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

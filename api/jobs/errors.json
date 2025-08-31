@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "errors": {
+    "BAD_INPUT": { "http": 400, "hint": "請檢查必填參數與圖片URL是否可讀取" },
+    "UNSUPPORTED_MEDIA_TYPE": { "http": 415, "hint": "只接受 image/jpeg 或 image/png" },
+    "RATE_LIMIT": { "http": 429, "hint": "稍後重試或降低候選張數" },
+    "TIMEOUT": { "http": 504, "hint": "模型回應逾時，將按策略自動重試" },
+    "TRANSIENT_MODEL_ERROR": { "http": 502, "hint": "模型短暫故障，建議重試" },
+    "MODEL_HARD_ERROR": { "http": 500, "hint": "模型拒絕或內部錯誤，請調整提示或素材" },
+    "STORAGE_ERROR": { "http": 500, "hint": "檔案存取失敗，請檢查儲存權限/路徑" },
+    "NOT_FOUND": { "http": 404, "hint": "找不到指定任務或資源" }
+  }
+}

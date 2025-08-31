@@ -1,0 +1,4 @@
+{
+  "states": ["queued","processing","succeeded","failed"],
+  "retryable_errors": ["RATE_LIMIT","TIMEOUT"]
+}

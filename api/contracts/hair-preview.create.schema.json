@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HairPreviewCreateRequest",
+  "type": "object",
+  "required": ["user_photo_url", "style_photo_url"],
+  "properties": {
+    "user_photo_url": { "type": "string", "format": "uri" },
+    "style_photo_url": { "type": "string", "format": "uri" },
+    "options": {
+      "type": "object",
+      "properties": {
+        "candidates": { "type": "integer", "minimum": 1, "maximum": 3, "default": 3 },
+        "keep_face": { "type": "boolean", "default": true },
+        "hair_rules": {
+          "type": "object",
+          "properties": {
+            "follow_length": { "type": "boolean", "default": true },
+            "follow_layers": { "type": "boolean", "default": true },
+            "follow_hairline": { "type": "boolean", "default": true },
+            "follow_parting": { "type": "boolean", "default": true },
+            "follow_color": { "type": "boolean", "default": true }
+          },
+          "additionalProperties": false
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "max_size_px": { "type": "integer", "minimum": 512, "maximum": 2048, "default": 1024 },
+            "format": { "type": "string", "enum": ["jpeg", "png"], "default": "jpeg" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+<svg width="680" height="160" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#5B5AE7"/>
+      <stop offset="60%" stop-color="#49E6D6"/>
+      <stop offset="100%" stop-color="#9F7AEA"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="24" width="112" height="112" rx="24" fill="url(#g)"/>
+  <path d="M44 116c27-15 40-50 31-66-5-8-15-8-23-3" fill="none" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  <text x="138" y="78" font-family="Inter, 'Noto Sans TC', system-ui" font-weight="800" font-size="38" fill="#111827">映髮｜一鏡換髮</text>
+  <text x="138" y="118" font-family="Inter, system-ui" font-weight="600" font-size="20" fill="#5B5AE7">HairLight Studio</text>
+</svg>

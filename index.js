@@ -1,0 +1,1 @@
+console.log('Hello, Hair Try-On MVP!');

@@ -1,0 +1,20 @@
+# Node / tooling
+node_modules/
+*.log
+npm-debug.log*
+pnpm-lock.yaml
+
+# 本機儲存：僅保留品牌檔
+storage/uploads/
+storage/results/
+storage/jobs/
+!storage/brand/
+
+# 環境變數與臨時檔
+.env
+*.bak
+*.tmp
+ui/public/index.backup.html
+.vercel/
+.firebase/
+.DS_Store

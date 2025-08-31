@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "default_mode": "async",
+  "commands": [
+    {
+      "name": "mvp:create",
+      "description": "建立髮型預覽任務（非同步預設）",
+      "args": [
+        { "name": "--user", "type": "string", "required": true, "desc": "顧客原照的本機路徑或可讀取的 URL" },
+        { "name": "--style", "type": "string", "required": true, "desc": "髮型參考圖的本機路徑或可讀取的 URL" }
+      ],
+      "options": [
+        { "name": "--candidates", "type": "integer", "default": 3, "min": 1, "max": 3, "desc": "候選張數" },
+        { "name": "--format", "type": "string", "enum": ["jpeg","png"], "default": "jpeg", "desc": "輸出格式" },
+        { "name": "--max-size", "type": "integer", "default": 1024, "min": 512, "max": 2048, "desc": "最長邊像素" },
+        { "name": "--outdir", "type": "string", "default": "storage/results", "desc": "輸出結果儲存資料夾" },
+        { "name": "--async", "type": "boolean", "default": true, "desc": "非同步模式（預設）" },
+        { "name": "--sync", "type": "boolean", "default": false, "desc": "同步模式（阻塞直到完成）" },
+        { "name": "--dry-run", "type": "boolean", "default": false, "desc": "僅驗證輸入並列印即將送出的 payload，不呼叫模型" },
+        { "name": "--local", "type": "boolean", "default": true, "desc": "本機檔案模式（讀取檔案並在後端轉成可上傳/編碼）；未來可切換為雲端簽名上傳" }
+      ],
+      "env": {
+        "GEMINI_API_KEY": { "required": true, "desc": "Gemini API 金鑰（.env）" },
+        "REGION": { "required": false, "default": "asia-east1", "desc": "部署區域" }
+      },
+      "contracts": {
+        "create": "api/contracts/hair-preview.create.schema.json",
+        "sign": "api/contracts/uploads.sign.schema.json"
+      },
+      "returns": {
+        "status": "queued",
+        "job_id": "string",
+        "eta_ms": "number"
+      },
+      "exit_codes": { "0": "success", "1": "BAD_INPUT", "2": "UNSUPPORTED_MEDIA_TYPE", "3": "MODEL_HARD_ERROR", "4": "STORAGE_ERROR" }
+    },
+    {
+      "name": "mvp:result",
+      "description": "查詢任務結果或輪詢直到完成",
+      "args": [
+        { "name": "--job", "type": "string", "required": true, "desc": "任務 ID" }
+      ],
+      "options": [
+        { "name": "--json", "type": "boolean", "default": true, "desc": "以 JSON 輸出結果" },
+        { "name": "--watch", "type": "integer", "default": 0, "desc": "以秒為單位輪詢結果（0 表示不輪詢）" }
+      ],
+      "contracts": {
+        "result": "api/contracts/hair-preview.result.schema.json"
+      },
+      "returns": {
+        "status": "queued|processing|succeeded|failed|canceled",
+        "results": "[{ url }]",
+        "meta": "{ latency_ms, cost_estimate_usd, model, region }",
+        "error": "{ code, message }"
+      },
+      "exit_codes": { "0": "success", "1": "NOT_FOUND", "2": "TIMEOUT", "3": "TRANSIENT_MODEL_ERROR", "4": "MODEL_HARD_ERROR" }
+    }
+  ],
+  "maps_to_http": {
+    "sign_uploads": { "method": "POST", "path": "/v1/uploads/sign", "schema": "api/contracts/uploads.sign.schema.json" },
+    "create_job":   { "method": "POST", "path": "/v1/hair-preview/create", "schema": "api/contracts/hair-preview.create.schema.json" },
+    "get_result":   { "method": "GET",  "path": "/v1/hair-preview/result", "schema": "api/contracts/hair-preview.result.schema.json" }
+  }
+}
