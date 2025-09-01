@@ -130,18 +130,31 @@ html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;t
     <fieldset>
       <legend>一鍵新任務（拍照 / 選圖）</legend>
       <div class="uploader-grid">
-        <label class="uploader" title="點擊選圖或拍照">
-          <input id="userFile" type="file" accept="image/*" capture="environment">
-          <img id="userThumb" alt=""><button type="button" class="redo">重選</button><span class="hint">顧客照</span><span aria-hidden="true">＋</span>
+        <!-- 顧客照 -->
+        <label class="uploader" title="拍照或選圖">
+          <input id="userFile" type="file" accept="image/*">
+          <img id="userThumb" alt="">
+          <span class="hint">顧客照</span>
         </label>
-        <label class="uploader" title="點擊選圖">
+        <div class="actions-inline" style="gap:6px;margin-top:6px">
+          <button id="btnUserCamera" class="btn">📷 拍照</button>
+          <button id="btnUserGallery" class="btn">🖼 從相簿</button>
+        </div>
+
+        <!-- 參考髮型 -->
+        <label class="uploader" title="拍照或選圖">
           <input id="styleFile" type="file" accept="image/*">
-          <img id="styleThumb" alt=""><button type="button" class="redo">重選</button><span class="hint">參考髮型</span><span aria-hidden="true">＋</span>
+          <img id="styleThumb" alt="">
+          <span class="hint">參考髮型</span>
         </label>
+        <div class="actions-inline" style="gap:6px;margin-top:6px">
+          <button id="btnStyleCamera" class="btn">📷 拍照</button>
+          <button id="btnStyleGallery" class="btn">🖼 從相簿</button>
+        </div>
+
         <div class="actions-inline">
           <button class="btn primary" id="newRun">建立並自動生成</button>
           <button id="wipe" class="btn" style="margin-left:8px;">清除此頁資料</button>
-          <span class="help">提示：手機請允許本頁使用相機；iOS 若無後鏡頭可試移除「environment」。</span>
         </div>
       </div>
     </fieldset>
@@ -273,8 +286,6 @@ async function loadJob(id){ busy(true,"讀取任務中…"); try{ const job=awai
 })();
 
 /* 上傳預覽＋重選 */
-document.getElementById("userFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; setThumb(f,document.getElementById("userThumb"),document.getElementById("userThumb").closest(".uploader")); });
-document.getElementById("styleFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; setThumb(f,document.getElementById("styleThumb"),document.getElementById("styleThumb").closest(".uploader")); });
 document.querySelectorAll(".uploader .redo").forEach(btn=>{
   btn.addEventListener("click",(ev)=>{ ev.stopPropagation(); const box=btn.closest(".uploader"); const input=box.querySelector("input"); const img=box.querySelector("img");
     input.value=""; img.removeAttribute("src"); box.classList.remove("has-img"); input.click(); });
@@ -434,6 +445,52 @@ async function fileToB64(file){
     document.getElementById('styleFile').value='';
     alert('已清空此頁資料。');
   };
+
+  // 通用：把 file input 轉 base64 預覽（你已有類似功能可留存）
+  // 這裡只做縮圖預覽
+  function setPreview(fileInputId, imgId){
+    const file = document.getElementById(fileInputId);
+    const img  = document.getElementById(imgId);
+    if (!file || !img) return;
+    file.addEventListener('change', ev => {
+      const f = ev.target.files?.[0];
+      if (!f) return;
+      const url = URL.createObjectURL(f);
+      img.src = url;
+    });
+  }
+
+  // 綁定一組「拍照/相簿」按鈕
+  function bindCameraGallery({ fileId, cameraBtnId, galleryBtnId }){
+    const file   = document.getElementById(fileId);
+    const camBtn = document.getElementById(cameraBtnId);
+    const galBtn = document.getElementById(galleryBtnId);
+    if (!file || !camBtn || !galBtn) return;
+
+    camBtn.onclick = (e) => {
+      e.preventDefault();
+      // iOS/Android：有 capture 時幾乎強制開相機（後鏡頭）
+      file.setAttribute('capture', 'environment');
+      file.click();
+    };
+    galBtn.onclick = (e) => {
+      e.preventDefault();
+      // 移除 capture → 開相簿/檔案挑選
+      file.removeAttribute('capture');
+      file.click();
+    };
+  }
+
+  // 啟用：顧客照 / 參考髮型
+  setPreview('userFile','userThumb');
+  setPreview('styleFile','styleThumb');
+
+  bindCameraGallery({
+    fileId: 'userFile', cameraBtnId: 'btnUserCamera', galleryBtnId: 'btnUserGallery'
+  });
+  bindCameraGallery({
+    fileId: 'styleFile', cameraBtnId: 'btnStyleCamera', galleryBtnId: 'btnStyleGallery'
+  });
 })();
 </script>
 </body>
