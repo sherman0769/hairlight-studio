@@ -366,7 +366,11 @@ async function fileToB64(file){
       if (data.style) document.getElementById('styleThumb').src = data.style;
 
       // 載入最新 job（你已有 loadJob 函式）
-      if (data.job_id && typeof loadJob === 'function') await loadJob(String(data.job_id));
+      if (data.job_id){
+        window.state = window.state || {};
+        window.state.job = data.job_id;   // ★ 把 job_id 存起來
+        if (typeof loadJob === 'function') await loadJob(String(data.job_id));
+      }
 
       // （可選）自動產出對比圖：呼叫 /api/compare
       // const cmpRes = await fetch('/api/compare', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_id: data.job_id, pick: 1, title:"映髮｜一鏡換髮"})});
