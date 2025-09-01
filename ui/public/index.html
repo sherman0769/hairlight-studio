@@ -286,28 +286,73 @@ document.getElementById("use").onclick = async ()=>{
   finally{ busy(false); }
 };
 
+// 放在你現有 <script> 內即可（helpers 區）
+async function fileToB64(file){
+  return await new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = () => {
+      // r.result 是 dataURL，取逗號後面的純 base64
+      const s = String(r.result||"");
+      const idx = s.indexOf(",");
+      resolve(idx>=0 ? s.slice(idx+1) : s);
+    };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
 /* —— 保證 newRun 綁定（僅綁一次） —— */
 (function wireNewRunOnce(){
-  const btn = document.getElementById('newRun'), userInput=document.getElementById('userFile'), styleInput=document.getElementById('styleFile');
-  if (!btn || btn.dataset.bound==='1') return; btn.dataset.bound='1'; console.log('[ui] new-run bound');
-  const ready = ()=> userInput?.files?.length>0 && styleInput?.files?.length>0;
+  const btn = document.getElementById('newRun');
+  const userInput=document.getElementById('userFile'), styleInput=document.getElementById('styleFile');
+  if (!btn || btn.dataset.bound==='1') return;
+  btn.dataset.bound='1';
+  console.log('[ui] new-run bound');
 
   btn.addEventListener('click', async ()=>{
-    if(!ready()){ toast('請先選取「顧客照 / 參考髮型」'); return; }
-    busy(true,'上傳與生成中（約 10–40 秒）…');
+    const uf = userInput?.files?.[0], sf = styleInput?.files?.[0];
+    if(!uf || !sf){ return alert('請先選取「顧客照 / 參考髮型」'); }
+
+    // 讀檔 → base64
+    const [u64, s64] = await Promise.all([fileToB64(uf), fileToB64(sf)]);
+
+    // 送到後端（JSON 版）
+    const body = JSON.stringify({
+      user_b64: u64,
+      style_b64: s64,
+      user_mime: uf.type || "image/jpeg",
+      style_mime: sf.type || "image/jpeg"
+    });
+
+    // 顯示忙碌（如果你有 busy 元件就打開）
+    const busyBox=document.getElementById('busy'); const busyText=document.getElementById('busyText');
+    if(busyBox&&busyText){ busyText.textContent='上傳與生成中（約 10–40 秒）…'; busyBox.style.display='flex'; }
+
     try{
-      const fd=new FormData(); fd.append('user',userInput.files[0]); fd.append('style',styleInput.files[0]);
-      const r = await fetch('/api/new-run',{method:'POST',body:fd}); const text=await r.text();
-      if(!r.ok) throw new Error(text||('HTTP '+r.status));
-      const data=JSON.parse(text);
-      if(data.user){ const p=data.user.replace(/^\//,''); state.userPath=p; const im=document.getElementById('userThumb'); im.src=data.user; im.closest('.uploader').classList.add('has-img'); }
-      if(data.style){ const p=data.style.replace(/^\//,''); state.stylePath=p; const im=document.getElementById('styleThumb'); im.src=data.style; im.closest('.uploader').classList.add('has-img'); }
-      if(data.job_id){ await loadJob(data.job_id); }
-      if(data.compare_url){ const rel=data.compare_url.startsWith('/')?data.compare_url:'/'+data.compare_url; const full=new URL(rel,location.origin).href;
-        document.getElementById('compareWrap').style.display=''; document.getElementById('compareLink').href=full; const im=document.getElementById('compareImg'); im.loading='lazy'; im.src=rel+'?t='+Date.now(); attachCtx(im); }
-      toast('生成完成');
-    }catch(e){ console.error('[ui] new-run error:',e); toast('執行失敗：'+(e?.message||e)); }
-    finally{ busy(false); }
+      // 用相對路徑呼叫（Vercel rewrite 會轉到 Firebase）
+      const r = await fetch('/api/new-run-b64', { method:'POST', headers:{'Content-Type':'application/json'}, body });
+      const data = await r.json();
+      if(!r.ok){ throw new Error(JSON.stringify(data)); }
+
+      // 回填預覽（注意：這裡是絕對 URL，不能在前面加 "/"）
+      if (data.user)  document.getElementById('userThumb').src  = data.user;
+      if (data.style) document.getElementById('styleThumb').src = data.style;
+
+      // 載入最新 job（你已有 loadJob 函式）
+      if (data.job_id && typeof loadJob === 'function') await loadJob(String(data.job_id));
+
+      // （可選）自動產出對比圖：呼叫 /api/compare
+      // const cmpRes = await fetch('/api/compare', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({job_id: data.job_id, pick: 1, title:"映髮｜一鏡換髮"})});
+      // const cmp = await cmpRes.json();
+      // if (cmp.compare_url){ const img = document.getElementById('compareImg'); document.getElementById('compareWrap').style.display=''; img.src = cmp.compare_url; }
+
+      alert('建立成功：' + data.job_id);
+    }catch(e){
+      console.error('[ui] new-run error:', e);
+      alert('建立失敗：' + (e?.message || e));
+    }finally{
+      if(busyBox) busyBox.style.display='none';
+    }
   });
 })();
 </script>
