@@ -300,7 +300,7 @@ document.getElementById('use').onclick = async () => {
     const link = document.getElementById('compareLink');
 
     wrap.style.display = '';
-    img.src  = data.compare_url + '?t=' + Date.now();   // 避免快取
+    img.src = data.compare_url + (data.compare_url.includes('?') ? '&' : '?') + 't=' + Date.now();   // 避免快取
     link.href = data.compare_url;
 
     alert('對比圖已產出');
