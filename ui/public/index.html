@@ -146,6 +146,7 @@ html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;t
     </fieldset>
 
     <div class="section-title" id="title">候選結果（長按或右鍵 → 放大／下載／分享）</div>
+    <div id="styleDesc" class="hint" style="margin:6px 4px 12px; color:#555;"></div>
     <div class="grid" id="grid"></div>
     <div class="subtle" id="hint"></div>
 
@@ -253,6 +254,9 @@ function render(job){
   });
   state.pick=auto+1;
   document.getElementById("hint").textContent=list.length?`已載入 ${list.length} 張，預設使用第 ${state.pick} 張`:"此任務目前沒有候選圖";
+  const desc = job.meta?.style_desc || null;
+  const sd   = document.getElementById('styleDesc');
+  if (sd) sd.textContent = desc ? `參考髮型特徵：${desc}` : '';
   if(job.meta?.user_src){ state.userPath=job.meta.user_src; const im=document.getElementById("userThumb"); im.src=job.meta.user_src; im.closest(".uploader").classList.add("has-img"); }
   if(job.meta?.style_src){ state.stylePath=job.meta.style_src; const im=document.getElementById("styleThumb"); im.src=job.meta.style_src; im.closest(".uploader").classList.add("has-img"); }
 }
@@ -370,6 +374,12 @@ async function fileToB64(file){
         window.state = window.state || {};
         window.state.job = data.job_id;   // ★ 把 job_id 存起來
         if (typeof loadJob === 'function') await loadJob(String(data.job_id));
+      }
+
+      // 讓建立成功就先顯示 style_desc
+      if (data.style_desc) {
+        const sd = document.getElementById('styleDesc');
+        if (sd) sd.textContent = `參考髮型特徵：${data.style_desc}`;
       }
 
       // （可選）自動產出對比圖：呼叫 /api/compare
