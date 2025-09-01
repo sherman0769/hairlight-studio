@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://api-evxeb7h3pq-de.a.run.app/api/$1" }
+  ]
+}
