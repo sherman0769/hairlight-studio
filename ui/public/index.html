@@ -274,21 +274,19 @@ document.querySelectorAll(".uploader .redo").forEach(btn=>{
     input.value=""; img.removeAttribute("src"); box.classList.remove("has-img"); input.click(); });
 });
 
-/* 只改這個按鈕的點擊處理 */
 document.getElementById('use').onclick = async () => {
   try{
     if(!window.state?.job){
-      alert('請先建立一次任務'); 
+      alert('請先建立一次任務');
       return;
     }
-    // 要使用的候選序號（render() 會把 state.pick 設好；使用者點卡片也會更新）
     const pick = Number(window.state.pick || 1);
 
-    // 顯示 Busy
+    // Busy
     const busyBox=document.getElementById('busy'), busyText=document.getElementById('busyText');
     if(busyBox&&busyText){ busyText.textContent='產生對比圖中…'; busyBox.style.display='flex'; }
 
-    // 呼叫雲端 compare（Vercel rewrite 會轉到 Firebase Functions）
+    // 呼叫 compare（Vercel 會 rewrite 到 Firebase）
     const body = JSON.stringify({
       job_id: String(window.state.job),
       pick,
@@ -298,21 +296,34 @@ document.getElementById('use').onclick = async () => {
     const data = await r.json();
     if(!r.ok){ throw new Error(data?.error || r.statusText); }
 
-    // 顯示結果
+    // 取節點
     const wrap = document.getElementById('compareWrap');
     const img  = document.getElementById('compareImg');
     const link = document.getElementById('compareLink');
 
-    wrap.style.display = '';
-    img.src = data.compare_url + (data.compare_url.includes('?') ? '&' : '?') + 't=' + Date.now();   // 避免快取
-    link.href = data.compare_url;
+    // 診斷：把 URL 印出來確認
+    console.log('[compare] url =', data.compare_url);
 
-    alert('對比圖已產出');
+    // 顯示區塊
+    wrap.style.display = '';
+
+    // 正確附加 cache-buster（避免出現兩個 ? 造成 404）
+    const u = new URL(data.compare_url);
+    u.searchParams.set('t', Date.now());
+
+    // load / error 診斷
+    img.onload  = () => console.log('[compare] loaded', img.naturalWidth, img.naturalHeight);
+    img.onerror = (e) => console.error('[compare] img error', e, img.src);
+
+    img.loading = 'lazy';
+    img.alt     = 'compare preview';
+    img.src     = u.toString();              // ← 這行會真的更新影像
+    link.href   = data.compare_url;          // 「在新分頁開啟」維持原簽名網址
   }catch(e){
     console.error('[ui] compare error:', e);
     alert('對比圖產生失敗：' + (e?.message || e));
   }finally{
-    const busyBox=document.getElementById('busy'); 
+    const busyBox=document.getElementById('busy');
     if(busyBox) busyBox.style.display='none';
   }
 };
