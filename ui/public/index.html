@@ -253,8 +253,8 @@ function render(job){
   });
   state.pick=auto+1;
   document.getElementById("hint").textContent=list.length?`已載入 ${list.length} 張，預設使用第 ${state.pick} 張`:"此任務目前沒有候選圖";
-  if(job.meta?.user_src){ state.userPath=job.meta.user_src; const im=document.getElementById("userThumb"); im.src="/"+job.meta.user_src; im.closest(".uploader").classList.add("has-img"); }
-  if(job.meta?.style_src){ state.stylePath=job.meta.style_src; const im=document.getElementById("styleThumb"); im.src="/"+job.meta.style_src; im.closest(".uploader").classList.add("has-img"); }
+  if(job.meta?.user_src){ state.userPath=job.meta.user_src; const im=document.getElementById("userThumb"); im.src=job.meta.user_src; im.closest(".uploader").classList.add("has-img"); }
+  if(job.meta?.style_src){ state.stylePath=job.meta.style_src; const im=document.getElementById("styleThumb"); im.src=job.meta.style_src; im.closest(".uploader").classList.add("has-img"); }
 }
 
 async function loadJob(id){ busy(true,"讀取任務中…"); try{ const job=await fetchJob(id); state.job=id; render(job); } finally{ busy(false); } }
