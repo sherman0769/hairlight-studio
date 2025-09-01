@@ -1,0 +1,11 @@
+{
+  "name": "映髮｜一鏡換髮（HairLight Studio）",
+  "short_name": "映髮",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f8",
+  "theme_color": "#5B5AE7",
+  "icons": [
+    { "src": "/storage/brand/hairlight-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
