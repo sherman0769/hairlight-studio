@@ -270,20 +270,47 @@ document.querySelectorAll(".uploader .redo").forEach(btn=>{
     input.value=""; img.removeAttribute("src"); box.classList.remove("has-img"); input.click(); });
 });
 
-/* 產出對比圖（使用最新路徑） */
-document.getElementById("use").onclick = async ()=>{
-  if(!state.job) return toast("請先建立或載入任務");
-  const userFS=(state.userPath||"").replace(/^\//,""), styleFS=(state.stylePath||"").replace(/^\//,"");
-  if(!userFS||!styleFS) return toast("請先選取『顧客照／參考髮型』");
-  busy(true,"產生對比圖中…");
+/* 只改這個按鈕的點擊處理 */
+document.getElementById('use').onclick = async () => {
   try{
-    const data=await fetchJSON("/api/compare",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({job_id:state.job,user:userFS,style:styleFS,pick:state.pick,title:(state.meta?.style_desc||"髮型預覽對比")})});
-    const rel=data.out.startsWith("/")?data.out:"/"+data.out, full=new URL(rel,location.origin).href;
-    document.getElementById("compareWrap").style.display=""; document.getElementById("compareLink").href=full;
-    const cimg=document.getElementById("compareImg"); cimg.loading="lazy"; cimg.src=rel+"?t="+Date.now(); attachCtx(cimg);
-    toast("映髮已產出對比圖");
-  }catch(e){ toast("產圖失敗："+e.message); }
-  finally{ busy(false); }
+    if(!window.state?.job){
+      alert('請先建立一次任務'); 
+      return;
+    }
+    // 要使用的候選序號（render() 會把 state.pick 設好；使用者點卡片也會更新）
+    const pick = Number(window.state.pick || 1);
+
+    // 顯示 Busy
+    const busyBox=document.getElementById('busy'), busyText=document.getElementById('busyText');
+    if(busyBox&&busyText){ busyText.textContent='產生對比圖中…'; busyBox.style.display='flex'; }
+
+    // 呼叫雲端 compare（Vercel rewrite 會轉到 Firebase Functions）
+    const body = JSON.stringify({
+      job_id: String(window.state.job),
+      pick,
+      title: (window.state?.meta?.style_desc || '映髮｜一鏡換髮')
+    });
+    const r = await fetch('/api/compare', { method:'POST', headers:{'Content-Type':'application/json'}, body });
+    const data = await r.json();
+    if(!r.ok){ throw new Error(data?.error || r.statusText); }
+
+    // 顯示結果
+    const wrap = document.getElementById('compareWrap');
+    const img  = document.getElementById('compareImg');
+    const link = document.getElementById('compareLink');
+
+    wrap.style.display = '';
+    img.src  = data.compare_url + '?t=' + Date.now();   // 避免快取
+    link.href = data.compare_url;
+
+    alert('對比圖已產出');
+  }catch(e){
+    console.error('[ui] compare error:', e);
+    alert('對比圖產生失敗：' + (e?.message || e));
+  }finally{
+    const busyBox=document.getElementById('busy'); 
+    if(busyBox) busyBox.style.display='none';
+  }
 };
 
 // 放在你現有 <script> 內即可（helpers 區）
