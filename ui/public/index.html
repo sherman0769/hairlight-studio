@@ -140,6 +140,7 @@ html,body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;t
         </label>
         <div class="actions-inline">
           <button class="btn primary" id="newRun">建立並自動生成</button>
+          <button id="wipe" class="btn" style="margin-left:8px;">清除此頁資料</button>
           <span class="help">提示：手機請允許本頁使用相機；iOS 若無後鏡頭可試移除「environment」。</span>
         </div>
       </div>
@@ -263,8 +264,13 @@ function render(job){
 
 async function loadJob(id){ busy(true,"讀取任務中…"); try{ const job=await fetchJob(id); state.job=id; render(job); } finally{ busy(false); } }
 
-/* 初始化：自動載入最新任務 */
-(async()=>{ try{ const info=await fetchLastJob(); if(info.job_id) await loadJob(info.job_id); }catch{} })();
+// 不自動載入任何 job（多人共用避免洩漏上一位客人資料）
+(function initBlank(){
+  const sd = document.getElementById('styleDesc'); if (sd) sd.textContent = '';
+  const grid = document.getElementById('grid'); if (grid) grid.innerHTML = '';
+  const cmp = document.getElementById('compareWrap'); if (cmp) cmp.style.display='none';
+  window.state = { job:null, pick:1, meta:null, userPath:null, stylePath:null };
+})();
 
 /* 上傳預覽＋重選 */
 document.getElementById("userFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; setThumb(f,document.getElementById("userThumb"),document.getElementById("userThumb").closest(".uploader")); });
@@ -406,6 +412,28 @@ async function fileToB64(file){
       if(busyBox) busyBox.style.display='none';
     }
   });
+
+  // 清除此頁資料按鈕
+  document.getElementById('wipe').onclick = ()=>{
+    // 清前端狀態與畫面
+    window.state = { job:null, pick:1, meta:null, userPath:null, stylePath:null };
+    const ids = ['userThumb','styleThumb','styleDesc','grid','compareImg'];
+    ids.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if (id==='grid') el.innerHTML='';
+      else if (id==='compareImg') el.src='';
+      else if (id==='styleDesc') el.textContent='';
+      else el.removeAttribute('src');
+    });
+    const cmp = document.getElementById('compareWrap'); if (cmp) cmp.style.display='none';
+    // 清 session 資料
+    sessionStorage.clear();
+    // 解除檔案 input 值
+    document.getElementById('userFile').value='';
+    document.getElementById('styleFile').value='';
+    alert('已清空此頁資料。');
+  };
 })();
 </script>
 </body>
